@@ -20,11 +20,11 @@ const FACTS = [
 // Ids key optional recordings (LINE_AUDIO in lib/witzy-voice.ts); the first tip is the recorded greeting.
 const TIPS: Line[] = [
   HELLO,
-  { id: "tip-refund", text: "Your AI just clicked 'refund'. Can you prove how much?" },
-  { id: "tip-chained", text: "Every note I take is chained to the one before. Nobody can quietly change them." },
-  { id: "tip-try", text: "Change one of my notes and I'll know. Try it below!" },
-  { id: "tip-fast", text: "I never slow your agent down. Less than a millisecond, promise." },
-  { id: "tip-local", text: "Your data stays on your computer. I just keep the receipts." },
+  { id: "tip-refund", text: "Say your AI refunds a customer. Later, someone asks: how much, and why?" },
+  { id: "tip-chained", text: "Right now, your only answer is the AI's own word. That's a claim, not proof." },
+  { id: "tip-try", text: "I keep a record nobody can quietly change. Not even you." },
+  { id: "tip-fast", text: "Don't believe me? Change one of my notes below and watch me catch it." },
+  { id: "tip-local", text: "I'm fast, and your data never leaves your computer." },
 ];
 const TIP_MS = 6500;
 // The greeting (tip 0) opens the first round only; later rounds go straight from the last tip to tip 1.

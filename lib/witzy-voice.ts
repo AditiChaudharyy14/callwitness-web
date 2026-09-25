@@ -14,7 +14,7 @@ export type Line = { id: string; text: string };
 
 export const HELLO: Line = {
   id: "hello",
-  text: "Hi! I'm Witzy. I watch what your AI agent does, and write it all down.",
+  text: "Hi! I'm Witzy. I watch your AI agent and write down everything it does.",
 };
 
 /** Recorded audio per line id. Add an entry here when a line gets its own recording. */
@@ -28,12 +28,12 @@ export const LINE_AUDIO: Partial<Record<string, string>> = {
  * public/brand/witzy/ and add the exact card text here.
  */
 const TEXT_AUDIO: Record<string, string> = {
-  "Hi! I'm Witzy. I watch what your AI agent does, and write it all down.": "/brand/witzy/witzy-hello.mp3",
-  "Your AI just clicked 'refund'. Can you prove how much?": "/brand/witzy/witzy-refund.mp3",
-  "Every note I take is chained to the one before. Nobody can quietly change them.": "/brand/witzy/witzy-chain.mp3",
-  "Change one of my notes and I'll know. Try it below!": "/brand/witzy/witzy-try.mp3",
-  "I never slow your agent down. Less than a millisecond, promise.": "/brand/witzy/witzy-fast.mp3",
-  "Your data stays on your computer. I just keep the receipts.": "/brand/witzy/witzy-local.mp3",
+  "Hi! I'm Witzy. I watch your AI agent and write down everything it does.": "/brand/witzy/witzy-hello.mp3",
+  "Say your AI refunds a customer. Later, someone asks: how much, and why?": "/brand/witzy/witzy-problem.mp3",
+  "Right now, your only answer is the AI's own word. That's a claim, not proof.": "/brand/witzy/witzy-claim.mp3",
+  "I keep a record nobody can quietly change. Not even you.": "/brand/witzy/witzy-record.mp3",
+  "Don't believe me? Change one of my notes below and watch me catch it.": "/brand/witzy/witzy-try.mp3",
+  "I'm fast, and your data never leaves your computer.": "/brand/witzy/witzy-fast.mp3",
 };
 
 const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -258,13 +258,20 @@ export function wave(ms = 1200) {
 }
 
 /** Irregular closed/half/open changes, about 10 a second, for `ms`. */
-function fakeTalk(ms: number) {
-  if (reducedMotion()) return;
+function fakeTalk(ms: number, onEnd?: () => void) {
   const id = job;
+  if (reducedMotion()) {
+    if (onEnd) timer = window.setTimeout(() => id === job && onEnd(), ms);
+    return;
+  }
   const end = performance.now() + ms;
   const step = () => {
     if (id !== job) return;
-    if (performance.now() >= end) return mouth.set("closed");
+    if (performance.now() >= end) {
+      mouth.set("closed");
+      onEnd?.();
+      return;
+    }
     const options: Frame[] = (["closed", "half", "open"] as Frame[]).filter((f) => f !== mouth.get());
     mouth.set(options[(Math.random() * options.length) | 0]);
     timer = window.setTimeout(step, 60 + Math.random() * 40 + (Math.random() < 0.1 ? 60 : 0));
@@ -273,7 +280,7 @@ function fakeTalk(ms: number) {
 }
 
 /** Plays the recording and moves the mouth with its loudness at audio.currentTime. */
-function lipSync(line: Line, src: string, onStart?: () => void) {
+function lipSync(line: Line, src: string, onStart?: () => void, onEnd?: () => void) {
   const id = job;
   const el = audioFor(src);
   void loadEnvelope(src);
@@ -300,6 +307,7 @@ function lipSync(line: Line, src: string, onStart?: () => void) {
     playing = null;
     cancelAnimationFrame(raf);
     mouth.set("closed");
+    onEnd?.();
   };
 
   dbg("play()", src, "readyState", el.readyState, "networkState", el.networkState);
@@ -311,7 +319,7 @@ function lipSync(line: Line, src: string, onStart?: () => void) {
       playing = null;
       cancelAnimationFrame(raf);
       onStart?.();
-      fakeTalk((line.text.length / TYPE_CPS) * 1000);
+      fakeTalk((line.text.length / TYPE_CPS) * 1000, onEnd);
     }
   );
 
@@ -353,7 +361,10 @@ function lipSync(line: Line, src: string, onStart?: () => void) {
  * Says a line: real audio + lip-sync if it has a recording and sound is on (or `force`, for a user
  * gesture), otherwise fake talk while it types. Replaces whatever Witzy was saying.
  */
-export function talk(line: Line, { force = false, onStart }: { force?: boolean; onStart?: () => void } = {}) {
+export function talk(
+  line: Line,
+  { force = false, onStart, onEnd }: { force?: boolean; onStart?: () => void; onEnd?: () => void } = {}
+) {
   if (typeof window === "undefined") return;
   hookVisibility();
   loadSound();
@@ -365,6 +376,7 @@ export function talk(line: Line, { force = false, onStart }: { force?: boolean; 
   if (playing && !playing.el.paused && !playing.el.ended && !force && !src) {
     dbg("kept voice playing over", line.id);
     onStart?.();
+    if (onEnd) timer = window.setTimeout(onEnd, (line.text.length / TYPE_CPS) * 1000);
     return;
   }
   stopMouth();
@@ -374,16 +386,15 @@ export function talk(line: Line, { force = false, onStart }: { force?: boolean; 
   if (src && !force && activated && !activated.hasBeenActive) {
     dbg("no click yet; waiting before playing", line.id);
     onStart?.();
-    fakeTalk((line.text.length / TYPE_CPS) * 1000);
+    fakeTalk((line.text.length / TYPE_CPS) * 1000, onEnd);
     return;
   }
-  // The greeting's recording is heard once per visit; after that the line (if shown) just fake-talks.
-  const once = line.id === HELLO.id && hasGreeted() && !force;
-  if (src && !once && (soundOn.get() || force)) {
-    lipSync(line, src, onStart);
+  // Every card with a recording is read out loud, the greeting included, whenever it is shown.
+  if (src && (soundOn.get() || force)) {
+    lipSync(line, src, onStart, onEnd);
   } else {
     onStart?.();
-    fakeTalk((line.text.length / TYPE_CPS) * 1000);
+    fakeTalk((line.text.length / TYPE_CPS) * 1000, onEnd);
   }
 }
 
@@ -391,7 +402,7 @@ export function talk(line: Line, { force = false, onStart }: { force?: boolean; 
  * The recorded greeting. Call from a click (that's what lets the browser play it); turns sound on.
  * Witzy waves from the click until 0.9s after the audio actually starts.
  */
-export function greet() {
+export function greet(onEnd?: () => void) {
   setSound(true);
   const motion = !reducedMotion();
   if (motion) {
@@ -406,5 +417,6 @@ export function greet() {
       window.clearTimeout(waveTimer);
       waveTimer = window.setTimeout(() => waving.set(false), GREETING_WAVE_MS);
     },
+    onEnd,
   });
 }
