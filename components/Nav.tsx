@@ -39,11 +39,11 @@ export default function Nav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-rule bg-paper/90 backdrop-blur-sm">
-        <nav className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 md:px-10">
-          <Link href="/" onClick={close} className="flex items-center gap-3 text-navy" aria-label="Callwitness home">
-            <LogoMark className="h-7 w-auto" />
-            <Wordmark className="h-[11px] w-auto" />
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#18223B]">
+        <nav className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-6 md:px-10">
+          <Link href="/" onClick={close} className="flex items-center gap-3 text-[#E3D2BC]" aria-label="Callwitness home">
+            <LogoMark className="h-8 w-auto" dotColor="#CFAD6E" />
+            <Wordmark className="h-[12px] w-auto" />
           </Link>
 
           <ul className="hidden items-center gap-8 md:flex">
@@ -51,7 +51,7 @@ export default function Nav() {
               <li key={l.href}>
                 <a
                   href={l.href}
-                  className="group relative font-mono text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-navy"
+                  className="group relative font-mono text-[11px] uppercase tracking-[0.14em] text-[#E3D2BC]/75 transition-colors hover:text-[#E3D2BC]"
                 >
                   {l.label}
                   <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-full" />
@@ -65,13 +65,13 @@ export default function Nav() {
               href={GITHUB}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-navy lg:inline"
+              className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-[#E3D2BC]/75 transition-colors hover:text-[#E3D2BC] lg:inline"
             >
               GitHub <span aria-hidden>&#8599;</span>
             </a>
             <a
               href="#review"
-              className="hidden bg-navy px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-bone transition-colors hover:bg-navy-deep sm:inline-block"
+              className="hidden border border-[#E3D2BC]/40 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#E3D2BC] transition-colors hover:bg-[#E3D2BC] hover:text-[#18223B] sm:inline-block"
             >
               Request a review
             </a>
@@ -83,8 +83,8 @@ export default function Nav() {
               aria-expanded={open}
               aria-controls="mobile-menu"
             >
-              <span className={`h-px w-5 bg-navy transition-transform duration-300 ${open ? "translate-y-[3px] rotate-45" : ""}`} />
-              <span className={`h-px w-5 bg-navy transition-transform duration-300 ${open ? "-translate-y-[3px] -rotate-45" : ""}`} />
+              <span className={`h-px w-5 bg-[#E3D2BC] transition-transform duration-300 ${open ? "translate-y-[3px] rotate-45" : ""}`} />
+              <span className={`h-px w-5 bg-[#E3D2BC] transition-transform duration-300 ${open ? "-translate-y-[3px] -rotate-45" : ""}`} />
             </button>
           </div>
         </nav>
@@ -94,16 +94,16 @@ export default function Nav() {
       <div
         id="mobile-menu"
         inert={!open}
-        className={`fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-paper transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto bg-[#18223B] transition-opacity duration-300 md:hidden ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
         <ul className="px-6 pt-6">
           {links.map((l) => (
-            <li key={l.href} className="border-b border-rule">
+            <li key={l.href} className="border-b border-white/10">
               <a href={l.href} onClick={close} className="flex items-baseline justify-between py-5">
-                <span className="font-serif text-3xl tracking-[-0.01em] text-navy">{l.label}</span>
-                <span className="label tabular-nums">{l.n}</span>
+                <span className="font-serif text-3xl tracking-[-0.01em] text-[#E3D2BC]">{l.label}</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] tabular-nums text-[#E3D2BC]/50">{l.n}</span>
               </a>
             </li>
           ))}
@@ -112,16 +112,16 @@ export default function Nav() {
           <a
             href="#review"
             onClick={close}
-            className="flex items-center justify-between bg-navy px-5 py-4 text-bone"
+            className="flex items-center justify-between bg-[#E3D2BC] px-5 py-4 text-[#18223B]"
           >
-            Request an evidence review <span className="text-gold" aria-hidden>&rarr;</span>
+            Request an evidence review <span className="text-[#9E8340]" aria-hidden>&rarr;</span>
           </a>
           <a
             href={GITHUB}
             target="_blank"
             rel="noopener noreferrer"
             onClick={close}
-            className="flex items-center justify-between border border-rule px-5 py-4 font-mono text-[13px] text-navy"
+            className="flex items-center justify-between border border-white/15 px-5 py-4 font-mono text-[13px] text-[#E3D2BC]"
           >
             GitHub <span aria-hidden>&#8599;</span>
           </a>
