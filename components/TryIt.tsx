@@ -2,7 +2,7 @@ import Ledger from "./Ledger";
 
 export default function TryIt() {
   return (
-    <section className="relative overflow-x-clip">
+    <section data-witzy="tryit" className="relative overflow-x-clip">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
           <span className="label">Exhibit 02 / Try to break it</span>

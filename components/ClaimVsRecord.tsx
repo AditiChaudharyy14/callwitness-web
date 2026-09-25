@@ -132,7 +132,7 @@ export default function ClaimVsRecord() {
   }
 
   return (
-    <section ref={root} className="relative">
+    <section data-witzy="claim" ref={root} className="relative">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
           <span className="label">Exhibit 03 / The claim and the record</span>

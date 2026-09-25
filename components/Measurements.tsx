@@ -49,7 +49,7 @@ export default function Measurements() {
   );
 
   return (
-    <section ref={root} className="bg-bone">
+    <section data-witzy="measurements" ref={root} className="bg-bone">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
           <span className="label">Exhibit 06 / Measured, not promised</span>

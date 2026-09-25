@@ -8,6 +8,7 @@ import Measurements from "@/components/Measurements";
 import Review from "@/components/Review";
 import Limits from "@/components/Limits";
 import Footer from "@/components/Footer";
+import WitzyCompanion from "@/components/WitzyCompanion";
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
         <Limits />
       </main>
       <Footer />
+      <WitzyCompanion />
     </>
   );
 }

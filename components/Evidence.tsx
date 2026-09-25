@@ -13,7 +13,7 @@ const ROW = "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 sm:grid-cols-[minmax(0,
 
 export default function Evidence() {
   return (
-    <section id="evidence" className="scroll-mt-[72px]">
+    <section data-witzy="evidence" id="evidence" className="scroll-mt-[72px]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
           <span className="label">Exhibit 05 / The evidence report</span>

@@ -10,7 +10,7 @@ const MAILTO = "mailto:callwitness.dev@gmail.com?subject=Evidence%20review%20for
 
 export default function Review() {
   return (
-    <section id="review" className="scroll-mt-[72px] bg-[#18223B] text-bone">
+    <section data-witzy="review" id="review" className="scroll-mt-[72px] bg-[#18223B] text-bone">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-bone/15 py-4">
           <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-bone/60">Exhibit 07 / Evidence review</span>
@@ -42,6 +42,7 @@ export default function Review() {
             <div className="mt-10">
               <a
                 href={MAILTO}
+                data-cta
                 className="group inline-flex items-center justify-between gap-6 bg-[#E3D2BC] px-6 py-4 text-[15px] text-[#18223B] transition-colors hover:bg-bone"
               >
                 Request an evidence review

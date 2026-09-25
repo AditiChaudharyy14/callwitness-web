@@ -30,7 +30,7 @@ const COLUMNS = [
 
 export default function Limits() {
   return (
-    <section id="limits" className="scroll-mt-[72px]">
+    <section data-witzy="limits" id="limits" className="scroll-mt-[72px]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
           <span className="label">Exhibit 08 / On the record</span>
