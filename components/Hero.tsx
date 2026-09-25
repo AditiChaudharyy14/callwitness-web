@@ -6,7 +6,8 @@ import { useGSAP } from "@gsap/react";
 import WitnessCanvas from "./WitnessCanvas";
 import WitzyBubble from "./WitzyBubble";
 import WitzyFrames from "./WitzyFrames";
-import { RESET_EVENT, TAMPER_EVENT, type TamperDetail } from "@/lib/chain";
+import { useLenis } from "lenis/react";
+import { RESET_EVENT, RESET_LINE, TAMPER_EVENT, emitInvite, tamperLine, type TamperDetail } from "@/lib/chain";
 import { onPointerMove } from "@/lib/pointer";
 import { HELLO, greet, hasGreeted, setSound, talk, useSound, wave, type Line } from "@/lib/witzy-voice";
 
@@ -17,13 +18,15 @@ const FACTS = [
   { k: "Licence", v: "MIT", note: "open source" },
 ];
 
-// Ids key optional recordings (LINE_AUDIO in lib/witzy-voice.ts); the first tip is the recorded greeting.
+// Witzy's story, one card at a time. Each line's recording is looked up by its text (TEXT_AUDIO in
+// lib/witzy-voice.ts); the first card is the greeting. The "dare" card gets a Show me button.
+const DARE_ID = "tip-dare";
 const TIPS: Line[] = [
   HELLO,
-  { id: "tip-refund", text: "Say your AI refunds a customer. Later, someone asks: how much, and why?" },
-  { id: "tip-chained", text: "Right now, your only answer is the AI's own word. That's a claim, not proof." },
-  { id: "tip-try", text: "I keep a record nobody can quietly change. Not even you." },
-  { id: "tip-fast", text: "Don't believe me? Change one of my notes below and watch me catch it." },
+  { id: "tip-problem", text: "Say your AI refunds a customer. Later, someone asks: how much, and why?" },
+  { id: "tip-claim", text: "Right now, your only answer is the AI's own word. That's a claim, not proof." },
+  { id: "tip-record", text: "I keep a record nobody can quietly change. Not even you." },
+  { id: DARE_ID, text: "Don't believe me? Change one of my notes below and watch me catch it." },
   { id: "tip-local", text: "I'm fast, and your data never leaves your computer." },
 ];
 const TIP_MS = 6500;
@@ -58,6 +61,7 @@ export default function Hero() {
   const [override, setOverride] = useState<Say | null>(null);
   const [turn, setTurn] = useState(0); // restarts the tip timer, e.g. so the greeting isn't cut short
   const sound = useSound();
+  const lenis = useLenis();
 
   const say: Say = override ?? { ...TIPS[tip], tone: "normal" };
 
@@ -205,11 +209,11 @@ export default function Hero() {
       if (!heroVisible.current) return;
       const row = (e as CustomEvent<TamperDetail>).detail.row;
       motion.current?.shake();
-      setOverride({ id: "tamper", text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
+      setOverride({ id: "tamper", text: tamperLine(row), tone: "fail" });
     };
     const onReset = () => {
       if (!heroVisible.current) return;
-      setOverride({ id: "reset", text: "Phew. Everything matches again.", tone: "normal" });
+      setOverride({ id: "reset", text: RESET_LINE, tone: "normal" });
     };
     window.addEventListener(TAMPER_EVENT, onTamper);
     window.addEventListener(RESET_EVENT, onReset);
@@ -236,6 +240,16 @@ export default function Hero() {
   function onWitzyClick() {
     if (!hasGreeted()) sayHello();
     else motion.current?.twirl(nextTip);
+  }
+
+  // "Show me": glide down to the ledger and have it point at the refund record.
+  function showMe() {
+    const target = document.getElementById("ledger");
+    if (!target) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (lenis && !reduce) lenis.scrollTo(target, { offset: -120, duration: 1.2 });
+    else target.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    emitInvite();
   }
 
   function toggleSound() {
@@ -296,6 +310,18 @@ export default function Hero() {
               <div className="min-w-0 flex-1 lg:absolute lg:right-[66%] lg:bottom-[80%] lg:z-10 lg:w-[280px]">
                 <div className={`transition-opacity duration-500 ${started ? "opacity-100" : "invisible opacity-0"}`}>
                   <WitzyBubble text={say.text} tone={say.tone} tail="right-to-down-right" />
+                  {say.id === DARE_ID && (
+                    <button
+                      type="button"
+                      onClick={showMe}
+                      className="group mt-2 inline-flex items-center gap-2 rounded-full border border-navy bg-navy px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-bone transition-colors hover:bg-navy-deep"
+                    >
+                      Show me
+                      <span aria-hidden className="text-gold transition-transform group-hover:translate-y-0.5">
+                        &darr;
+                      </span>
+                    </button>
+                  )}
                   <div className="mt-2 flex items-center justify-between gap-3 px-1 lg:pr-12">
                     <button
                       type="button"

@@ -79,3 +79,13 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Witzy's "Show me": the pointed-at ledger record breathes a gold outline until it's edited. */
+@keyframes cw-invite {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--color-gold); }
+  50% { box-shadow: inset 0 0 0 2px var(--color-gold), 0 0 0 4px color-mix(in srgb, var(--color-gold) 25%, transparent); }
+}
+.cw-invite { animation: cw-invite 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cw-invite { animation: none; box-shadow: inset 0 0 0 2px var(--color-gold); }
+}

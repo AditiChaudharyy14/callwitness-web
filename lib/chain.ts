@@ -4,6 +4,16 @@ import { useSyncExternalStore } from "react";
 // logo) can react. The current state is also kept here, so anything mounting later still sees it.
 export const TAMPER_EVENT = "cw:tamper";
 export const RESET_EVENT = "cw:reset";
+// Witzy's "Show me" button asks the ledger to point at the record worth editing.
+export const INVITE_EVENT = "cw:invite";
+
+/** Short text Witzy says when the chain breaks at `row` (0-based). */
+export const tamperLine = (row: number) => `Caught it! Someone changed record ${String(row + 1).padStart(2, "0")}.`;
+export const RESET_LINE = "Phew. Every record checks out again.";
+
+export function emitInvite() {
+  window.dispatchEvent(new CustomEvent(INVITE_EVENT));
+}
 
 export type TamperDetail = { row: number };
 

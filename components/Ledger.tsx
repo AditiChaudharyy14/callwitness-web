@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { sha256Hex } from "@/lib/sha256";
-import { emitReset, emitTamper } from "@/lib/chain";
+import { INVITE_EVENT, emitReset, emitTamper } from "@/lib/chain";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -31,6 +31,9 @@ const PREV = [GENESIS, ...ORIGINAL.slice(0, -1)];
 const HEAD = ORIGINAL[ORIGINAL.length - 1];
 const LAST = RECORDS.length - 1;
 const HEX = "0123456789abcdef";
+// The record Witzy's "Show me" points at: the refund, the amount a customer would ask about.
+const INVITE_ROW = 2;
+const INVITE_MS = 12000;
 
 const short = (h: string) => h.slice(0, 12);
 const num = (i: number) => String(i + 1).padStart(2, "0");
@@ -87,6 +90,23 @@ export default function Ledger() {
   const [shown, setShown] = useState(() => ORIGINAL.map(short));
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
+  const [invited, setInvited] = useState(false);
+
+  // Witzy's "Show me": finish the intro at once and point at the refund record for a while.
+  useEffect(() => {
+    let timer = 0;
+    const onInvite = () => {
+      intro.current?.progress(1);
+      setInvited(true);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setInvited(false), INVITE_MS);
+    };
+    window.addEventListener(INVITE_EVENT, onInvite);
+    return () => {
+      window.removeEventListener(INVITE_EVENT, onInvite);
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   const setShownAt = (i: number, v: string) => setShown((s) => s.map((x, j) => (j === i ? v : x)));
 
@@ -159,6 +179,7 @@ export default function Ledger() {
 
   function startEdit(i: number) {
     intro.current?.progress(1);
+    setInvited(false);
     cancelEdit.current = false;
     setDraft(contents[i]);
     setEditing(i);
@@ -222,7 +243,7 @@ export default function Ledger() {
       : "The edit changed the hash. Every later record still points to the old one. That's how callwitness verify catches it.";
 
   return (
-    <div ref={root} className="relative mr-2 mb-2">
+    <div ref={root} id="ledger" className="relative mr-2 mb-2">
       {/* the sheet underneath: the ledger reads as the top document on a stack */}
       <div aria-hidden className="absolute inset-0 translate-x-2 translate-y-2 border border-rule bg-[#EFE6D6]" />
 
@@ -254,7 +275,15 @@ export default function Ledger() {
 
         {/* hint */}
         <div className="flex items-center justify-between gap-4 border-b border-rule px-4 py-2 font-mono text-[11px] text-muted sm:px-5">
-          <span>Try it: click a record and change it.</span>
+          <span className={invited ? "text-navy" : undefined}>
+            {invited ? (
+              <>
+                Try it: change <span className="text-gold-deep">$40.00</span> in record {num(INVITE_ROW)} to any amount.
+              </>
+            ) : (
+              "Try it: click a record and change it."
+            )}
+          </span>
           {dirty && (
             <button
               type="button"
@@ -281,12 +310,13 @@ export default function Ledger() {
             const linkBroken = i > 0 && linkAfterBroken(i - 1);
             const nextBroken = linkAfterBroken(i);
             const nodeFail = !intact && i > firstBad;
+            const pointed = invited && i === INVITE_ROW;
             return (
               <li
                 key={r.tool}
                 data-row
                 className={`relative grid grid-cols-[1.5rem_1fr] gap-x-3 border-b border-rule py-2.5 pr-4 pl-10 font-mono tabular-nums transition-colors last:border-b-0 sm:pr-5 ${
-                  modified ? "bg-fail/6" : "hover:bg-paper/50"
+                  modified ? "bg-fail/6" : pointed ? "bg-gold/15 cw-invite" : "hover:bg-paper/50"
                 }`}
               >
                 {/* chain: upper half joins the previous record, lower half the next (or the head) */}

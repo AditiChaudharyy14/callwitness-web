@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import WitzyBubble from "./WitzyBubble";
 import WitzyFrames from "./WitzyFrames";
-import { RESET_EVENT, TAMPER_EVENT, type TamperDetail } from "@/lib/chain";
+import { RESET_EVENT, RESET_LINE, TAMPER_EVENT, tamperLine, type TamperDetail } from "@/lib/chain";
 import { HELLO, greet, hasGreeted, talk, wave, type Line } from "@/lib/witzy-voice";
 
 // Once the hero has scrolled away, a small Witzy keeps the visitor company in the bottom-right corner
@@ -12,7 +12,7 @@ import { HELLO, greet, hasGreeted, talk, wave, type Line } from "@/lib/witzy-voi
 // footer, and for the rest of the session once dismissed.
 
 const LINES: Record<string, string> = {
-  tryit: "Go on, change a record. I dare you.",
+  tryit: "Go on. Change the refund amount. I dare you.",
   claim: "Drag the line. What it said vs what it did.",
   mechanism: "I sit in the middle and copy everything. I never block anything.",
   evidence: "One command gives you this page. Hand it to anyone.",
@@ -39,7 +39,7 @@ const subscribeDismissed = (l: () => void) => {
 
 type Say = Line & { tone: "normal" | "fail" };
 
-// Line ids key optional recordings (LINE_AUDIO in lib/witzy-voice.ts).
+// Recordings are looked up by line text (TEXT_AUDIO in lib/witzy-voice.ts).
 const sectionLine = (key: string): Say => ({ id: `companion-${key}`, text: LINES[key], tone: "normal" });
 
 export default function WitzyCompanion() {
@@ -155,10 +155,10 @@ export default function WitzyCompanion() {
       if (!isVisible()) return;
       const row = (e as CustomEvent<TamperDetail>).detail.row;
       shake();
-      show({ id: "tamper", text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
+      show({ id: "tamper", text: tamperLine(row), tone: "fail" });
     };
     const onReset = () => {
-      if (isVisible()) show({ id: "reset", text: "Phew. Everything matches again.", tone: "normal" });
+      if (isVisible()) show({ id: "reset", text: RESET_LINE, tone: "normal" });
     };
     window.addEventListener(TAMPER_EVENT, onTamper);
     window.addEventListener(RESET_EVENT, onReset);

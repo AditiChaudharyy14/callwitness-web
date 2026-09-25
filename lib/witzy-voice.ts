@@ -34,6 +34,21 @@ const TEXT_AUDIO: Record<string, string> = {
   "I keep a record nobody can quietly change. Not even you.": "/brand/witzy/witzy-record.mp3",
   "Don't believe me? Change one of my notes below and watch me catch it.": "/brand/witzy/witzy-try.mp3",
   "I'm fast, and your data never leaves your computer.": "/brand/witzy/witzy-fast.mp3",
+  // Reactions to the ledger
+  "Caught it! Someone changed record 01.": "/brand/witzy/witzy-tamper-1.mp3",
+  "Caught it! Someone changed record 02.": "/brand/witzy/witzy-tamper-2.mp3",
+  "Caught it! Someone changed record 03.": "/brand/witzy/witzy-tamper-3.mp3",
+  "Caught it! Someone changed record 04.": "/brand/witzy/witzy-tamper-4.mp3",
+  "Caught it! Someone changed record 05.": "/brand/witzy/witzy-tamper-5.mp3",
+  "Phew. Every record checks out again.": "/brand/witzy/witzy-reset.mp3",
+  // The small companion Witzy, one line per section (loaded when first said, not preloaded)
+  "Go on. Change the refund amount. I dare you.": "/brand/witzy/witzy-c-tryit.mp3",
+  "Drag the line. What it said vs what it did.": "/brand/witzy/witzy-c-claim.mp3",
+  "I sit in the middle and copy everything. I never block anything.": "/brand/witzy/witzy-c-mechanism.mp3",
+  "One command gives you this page. Hand it to anyone.": "/brand/witzy/witzy-c-evidence.mp3",
+  "Told you I'm fast.": "/brand/witzy/witzy-c-measurements.mp3",
+  "Want me to watch your agent for a week?": "/brand/witzy/witzy-c-review.mp3",
+  "I'm honest about what I can't do yet.": "/brand/witzy/witzy-c-limits.mp3",
 };
 
 const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -210,6 +225,7 @@ function loadEnvelope(src: string): Promise<void> {
 export function preloadVoice() {
   if (typeof window === "undefined") return;
   for (const src of new Set([...Object.values(LINE_AUDIO), ...Object.values(TEXT_AUDIO)])) {
+    if (!src || src.includes("/witzy-c-")) continue; // companion lines load when first said
     if (!src) continue;
     audioFor(src);
     void loadEnvelope(src);
