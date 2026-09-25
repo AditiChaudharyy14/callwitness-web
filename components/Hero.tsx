@@ -1,14 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import WitnessCanvas from "./WitnessCanvas";
 import WitzyBubble from "./WitzyBubble";
+import WitzyFrames from "./WitzyFrames";
 import { RESET_EVENT, TAMPER_EVENT, type TamperDetail } from "@/lib/chain";
 import { onPointerMove } from "@/lib/pointer";
-import { setSound, speak, useSound, useSpeechSupported } from "@/lib/witzy-voice";
+import { HELLO, greet, hasGreeted, setSound, talk, useSound, wave, type Line } from "@/lib/witzy-voice";
 
 const FACTS = [
   { k: "Added latency", v: "0.34 ms", note: "p50, small call" },
@@ -17,25 +17,21 @@ const FACTS = [
   { k: "Licence", v: "MIT", note: "open source" },
 ];
 
-const TIPS = [
-  "Hi! I'm Witzy. I watch what your AI agent does, and write it all down.",
-  "Your AI just clicked 'refund'. Can you prove how much?",
-  "Every note I take is chained to the one before. Nobody can quietly change them.",
-  "Change one of my notes and I'll know. Try it below!",
-  "I never slow your agent down. Less than a millisecond, promise.",
-  "Your data stays on your computer. I just keep the receipts.",
+// Ids key optional recordings (LINE_AUDIO in lib/witzy-voice.ts); the first tip is the recorded greeting.
+const TIPS: Line[] = [
+  HELLO,
+  { id: "tip-refund", text: "Your AI just clicked 'refund'. Can you prove how much?" },
+  { id: "tip-chained", text: "Every note I take is chained to the one before. Nobody can quietly change them." },
+  { id: "tip-try", text: "Change one of my notes and I'll know. Try it below!" },
+  { id: "tip-fast", text: "I never slow your agent down. Less than a millisecond, promise." },
+  { id: "tip-local", text: "Your data stays on your computer. I just keep the receipts." },
 ];
 const TIP_MS = 6500;
+// The greeting (tip 0) opens the first round only; later rounds go straight from the last tip to tip 1.
+const nextTipIndex = (t: number) => (t + 1) % TIPS.length || 1;
+const LANDING_WAVE_MS = 1200;
 
-// Witzy's eyes, measured from witzy.png, in % of the image (centre x/y, width/height), slightly
-// oversized so a closed lid covers the rim. Order: left, right, forehead.
-const EYES = [
-  { x: 39.3, y: 46.5, w: 18.6, h: 18.2 },
-  { x: 71.0, y: 42.5, w: 17.0, h: 17.4 },
-  { x: 52.3, y: 27.4, w: 11.6, h: 9.6 },
-];
-
-type Say = { text: string; tone: "normal" | "fail" };
+type Say = Line & { tone: "normal" | "fail" };
 type Motion = {
   onSettle: (animated: boolean) => void;
   onDissolve: (active: boolean) => void;
@@ -51,7 +47,7 @@ export default function Hero() {
   const figure = useRef<HTMLDivElement>(null); // fades in over the particles
   const look = useRef<HTMLDivElement>(null); // leans toward the cursor
   const idle = useRef<HTMLDivElement>(null); // breathing and floating
-  const action = useRef<HTMLButtonElement>(null); // hop, wiggle, twirl, shake
+  const action = useRef<HTMLButtonElement>(null); // hop, twirl, shake
   const motion = useRef<Motion | null>(null);
   const heroVisible = useRef(false);
 
@@ -60,10 +56,10 @@ export default function Hero() {
   const [visible, setVisible] = useState(false);
   const [tip, setTip] = useState(0);
   const [override, setOverride] = useState<Say | null>(null);
+  const [turn, setTurn] = useState(0); // restarts the tip timer, e.g. so the greeting isn't cut short
   const sound = useSound();
-  const canSpeak = useSpeechSupported();
 
-  const say: Say = override ?? { text: TIPS[tip], tone: "normal" };
+  const say: Say = override ?? { ...TIPS[tip], tone: "normal" };
 
   useGSAP(
     (_context, contextSafe) => {
@@ -77,18 +73,9 @@ export default function Hero() {
       if (!contextSafe) return;
 
       const loops: gsap.core.Animation[] = [];
-      let blink: gsap.core.Tween | null = null;
       let offPointer = () => {};
       let offLeave = () => {};
       let landed = false;
-
-      // Every 4-7s, navy lids close over all three eyes for 140ms.
-      const scheduleBlink = contextSafe(() => {
-        blink = gsap.delayedCall(4 + Math.random() * 3, () => {
-          gsap.fromTo("[data-lid]", { scaleY: 0 }, { scaleY: 1, duration: 0.07, yoyo: true, repeat: 1, ease: "power1.inOut" });
-          scheduleBlink();
-        });
-      });
 
       const startAlive = contextSafe(() => {
         landed = true;
@@ -96,7 +83,6 @@ export default function Hero() {
           gsap.to(idle.current, { scaleY: 1.025, scaleX: 0.99, duration: 2.6, yoyo: true, repeat: -1, ease: "sine.inOut" }),
           gsap.to(idle.current, { y: -8, duration: 3.4, yoyo: true, repeat: -1, ease: "sine.inOut" })
         );
-        scheduleBlink();
 
         // Lean toward the cursor; back to neutral when it leaves the hero or the window.
         const rot = gsap.quickTo(look.current, "rotation", { duration: 0.6, ease: "power2.out" });
@@ -127,19 +113,21 @@ export default function Hero() {
           if (!animated) {
             gsap.set(figure.current, { opacity: 1 });
             setStarted(true);
+            if (hasGreeted()) setTip(1); // greeted earlier this visit: skip the greeting line
             return;
           }
-          // Crossfade from the particles, then land: a hop and a wiggle before the first line.
+          // Crossfade from the particles, then land: a wave (1.2s) with a small hop before the first line.
           gsap
             .timeline()
             .to(figure.current, { opacity: 1, duration: 0.5, ease: "power2.out" })
+            .add(() => wave(LANDING_WAVE_MS))
             .to(action.current, { y: -18, duration: 0.25, ease: "power2.out" })
             .to(action.current, { y: 0, duration: 0.25, ease: "back.out(3)" })
-            .to(action.current, { keyframes: { rotation: [-6, 6, -4, 0] }, duration: 0.6, ease: "sine.inOut" })
             .add(() => {
               setStarted(true);
+              if (hasGreeted()) setTip(1); // greeted earlier this visit: skip the greeting line
               startAlive();
-            });
+            }, `+=${LANDING_WAVE_MS / 1000 - 0.5}`);
         }),
         onDissolve: contextSafe((active: boolean) => {
           gsap.to(figure.current, { opacity: active ? 0 : 1, duration: 0.5, overwrite: "auto" });
@@ -147,8 +135,6 @@ export default function Hero() {
         setActive: contextSafe((active: boolean) => {
           if (!landed) return;
           loops.forEach((l) => (active ? l.resume() : l.pause()));
-          if (active) blink?.resume();
-          else blink?.pause();
         }),
         twirl: contextSafe((then: () => void) => {
           if (reduce || !landed || gsap.isTweening(action.current)) return then();
@@ -202,15 +188,16 @@ export default function Hero() {
     if (!started || !visible) return;
     const id = window.setTimeout(() => {
       if (override) setOverride(null);
-      else setTip((t) => (t + 1) % TIPS.length);
+      else setTip(nextTipIndex);
     }, TIP_MS);
     return () => window.clearTimeout(id);
-  }, [started, visible, tip, override]);
+  }, [started, visible, tip, override, turn]);
 
-  // Speak each new line while sound is on and the hero is visible.
+  // Say each new line while the hero is visible: recorded audio with lip-sync if it has one and sound
+  // is on, otherwise the mouth moves while the text types.
   useEffect(() => {
-    if (started && heroVisible.current) speak(say.text);
-  }, [say.text, started]);
+    if (started && heroVisible.current) talk({ id: say.id, text: say.text });
+  }, [say.id, say.text, started]);
 
   // React to the ledger in Exhibit 02, if this is the Witzy on screen.
   useEffect(() => {
@@ -218,11 +205,11 @@ export default function Hero() {
       if (!heroVisible.current) return;
       const row = (e as CustomEvent<TamperDetail>).detail.row;
       motion.current?.shake();
-      setOverride({ text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
+      setOverride({ id: "tamper", text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
     };
     const onReset = () => {
       if (!heroVisible.current) return;
-      setOverride({ text: "Phew. Everything matches again.", tone: "normal" });
+      setOverride({ id: "reset", text: "Phew. Everything matches again.", tone: "normal" });
     };
     window.addEventListener(TAMPER_EVENT, onTamper);
     window.addEventListener(RESET_EVENT, onReset);
@@ -234,13 +221,28 @@ export default function Hero() {
 
   function nextTip() {
     setOverride(null);
-    setTip((t) => (t + 1) % TIPS.length);
+    setTip(nextTipIndex);
+  }
+
+  // The first click on Witzy, or turning sound on, plays the recorded greeting. Both run inside the
+  // click, which is what lets the browser start audio.
+  function sayHello() {
+    setOverride(null);
+    setTip(0);
+    setTurn((n) => n + 1);
+    greet();
+  }
+
+  function onWitzyClick() {
+    if (!hasGreeted()) sayHello();
+    else motion.current?.twirl(nextTip);
   }
 
   function toggleSound() {
-    const on = !sound;
-    setSound(on);
-    if (on) speak(say.text); // inside the click, so the browser allows it
+    if (sound) return setSound(false);
+    if (!hasGreeted()) return sayHello();
+    setSound(true);
+    talk({ id: say.id, text: say.text }, { force: true });
   }
 
   async function copyInstall() {
@@ -264,7 +266,7 @@ export default function Hero() {
         <WitnessCanvas
           stageRef={stage}
           slotRef={slot}
-          src="/brand/witzy-800.webp"
+          src="/brand/witzy/witzy-closed-800.webp"
           onSettle={(animated) => motion.current?.onSettle(animated)}
           onDissolve={(active) => motion.current?.onDissolve(active)}
         />
@@ -299,7 +301,7 @@ export default function Hero() {
                       type="button"
                       onClick={toggleSound}
                       aria-pressed={sound}
-                      className={`shrink-0 font-mono text-[10px] whitespace-nowrap uppercase tracking-[0.14em] text-muted underline decoration-rule underline-offset-4 hover:text-navy ${canSpeak ? "" : "invisible"}`}
+                      className={`shrink-0 font-mono text-[10px] whitespace-nowrap uppercase tracking-[0.14em] text-muted underline decoration-rule underline-offset-4 hover:text-navy`}
                     >
                       {sound ? "Sound on" : "Sound off"}
                     </button>
@@ -335,36 +337,11 @@ export default function Hero() {
                       <button
                         ref={action}
                         type="button"
-                        onClick={() => motion.current?.twirl(nextTip)}
-                        aria-label="Witzy, the Callwitness mascot. Show the next tip."
+                        onClick={onWitzyClick}
+                        aria-label="Witzy, the Callwitness mascot. Say hello, then show the next tip."
                         className="relative block h-full w-full origin-bottom cursor-pointer rounded-full"
                       >
-                        <Image
-                          src="/brand/witzy-800.webp"
-                          alt=""
-                          width={800}
-                          height={800}
-                          priority
-                          draggable={false}
-                          className="pointer-events-none h-full w-full select-none"
-                        />
-                        {EYES.map((e, i) => (
-                          <span
-                            key={i}
-                            data-lid
-                            aria-hidden
-                            className="pointer-events-none absolute rounded-[50%] bg-[#1B2440]"
-                            // open by default; GSAP animates this same transform (a Tailwind scale-* class would set
-                            // the separate `scale` property and keep the lid shut at zero height)
-                            style={{
-                              left: `${e.x - e.w / 2}%`,
-                              top: `${e.y - e.h / 2}%`,
-                              width: `${e.w}%`,
-                              height: `${e.h}%`,
-                              transform: "scaleY(0)",
-                            }}
-                          />
-                        ))}
+                        <WitzyFrames size={800} />
                       </button>
                     </div>
                   </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import WitzyBubble from "./WitzyBubble";
+import WitzyFrames from "./WitzyFrames";
 import { RESET_EVENT, TAMPER_EVENT, type TamperDetail } from "@/lib/chain";
-import { speak } from "@/lib/witzy-voice";
+import { HELLO, greet, hasGreeted, talk, wave, type Line } from "@/lib/witzy-voice";
 
 // Once the hero has scrolled away, a small Witzy keeps the visitor company in the bottom-right corner
 // with one line about the section in view. Hidden over the hero (the big Witzy is there), in the
@@ -37,7 +37,10 @@ const subscribeDismissed = (l: () => void) => {
   return () => dismissListeners.delete(l);
 };
 
-type Say = { text: string; tone: "normal" | "fail" };
+type Say = Line & { tone: "normal" | "fail" };
+
+// Line ids key optional recordings (LINE_AUDIO in lib/witzy-voice.ts).
+const sectionLine = (key: string): Say => ({ id: `companion-${key}`, text: LINES[key], tone: "normal" });
 
 export default function WitzyCompanion() {
   const figure = useRef<HTMLButtonElement>(null);
@@ -53,14 +56,14 @@ export default function WitzyCompanion() {
   const visible = !heroIn && !footerIn && !dismissed;
   // Observer callbacks can fire in the same frame, before React re-renders, so they read these
   // synchronously updated values rather than `visible`.
-  const state = useRef({ heroIn: true, footerIn: false, section: "" });
+  const state = useRef({ heroIn: true, footerIn: false, section: "", waved: false });
   const isVisible = () => !state.current.heroIn && !state.current.footerIn && !readDismissed();
 
   function show(next: Say) {
     setSay(next);
     setOpen(true);
     setOpened((n) => n + 1);
-    speak(next.text);
+    talk(next);
   }
 
   // Where are we? Hero and footer hide the companion; the section across the middle of the screen picks the line.
@@ -78,8 +81,14 @@ export default function WitzyCompanion() {
           setFooterIn(e.isIntersecting);
         }
       }
-      // Just appeared (e.g. scrolled past the hero): say something about wherever we are.
-      if (!wasVisible && isVisible() && state.current.section) show({ text: LINES[state.current.section], tone: "normal" });
+      // Just appeared (e.g. scrolled past the hero): wave the first time, and say something about wherever we are.
+      if (!wasVisible && isVisible()) {
+        if (!state.current.waved) {
+          state.current.waved = true;
+          wave(1200);
+        }
+        if (state.current.section) show(sectionLine(state.current.section));
+      }
     });
     if (stage) edges.observe(stage);
     if (footer) edges.observe(footer);
@@ -90,7 +99,7 @@ export default function WitzyCompanion() {
           const key = (e.target as HTMLElement).dataset.witzy ?? "";
           if (!e.isIntersecting || key === state.current.section || !LINES[key]) continue;
           state.current.section = key;
-          if (isVisible()) show({ text: LINES[key], tone: "normal" });
+          if (isVisible()) show(sectionLine(key));
         }
       },
       { rootMargin: "-45% 0px -45% 0px" }
@@ -146,10 +155,10 @@ export default function WitzyCompanion() {
       if (!isVisible()) return;
       const row = (e as CustomEvent<TamperDetail>).detail.row;
       shake();
-      show({ text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
+      show({ id: "tamper", text: `Hey! Someone changed record ${String(row + 1).padStart(2, "0")}!`, tone: "fail" });
     };
     const onReset = () => {
-      if (isVisible()) show({ text: "Phew. Everything matches again.", tone: "normal" });
+      if (isVisible()) show({ id: "reset", text: "Phew. Everything matches again.", tone: "normal" });
     };
     window.addEventListener(TAMPER_EVENT, onTamper);
     window.addEventListener(RESET_EVENT, onReset);
@@ -160,8 +169,15 @@ export default function WitzyCompanion() {
   }, []);
 
   function onWitzyClick() {
-    const text = say?.text ?? LINES[state.current.section];
-    if (text) show({ text, tone: say?.tone ?? "normal" });
+    // The first click anywhere on Witzy plays the recorded greeting (the click lets the browser start audio).
+    if (!hasGreeted()) {
+      setSay({ ...HELLO, tone: "normal" });
+      setOpen(true);
+      setOpened((n) => n + 1);
+      return greet();
+    }
+    const again = say ?? (state.current.section ? sectionLine(state.current.section) : null);
+    if (again) show(again);
   }
 
   function dismiss() {
@@ -196,9 +212,9 @@ export default function WitzyCompanion() {
           type="button"
           onClick={onWitzyClick}
           aria-label="Witzy. Show what he's saying."
-          className="block h-full w-full cursor-pointer rounded-full"
+          className="relative block h-full w-full cursor-pointer rounded-full"
         >
-          <Image src="/brand/witzy-400.webp" alt="" width={84} height={84} draggable={false} className="h-full w-full select-none" />
+          <WitzyFrames size={400} />
         </button>
         <button
           type="button"
