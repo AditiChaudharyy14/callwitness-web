@@ -37,7 +37,7 @@ export default function Hero() {
   }
 
   return (
-    <section ref={root} className="relative">
+    <section ref={root} className="relative overflow-x-clip">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         {/* masthead strip */}
         <div data-fade className="flex items-center justify-between border-b border-rule py-4">
@@ -45,10 +45,10 @@ export default function Hero() {
           <span className="label hidden sm:inline">Open source &middot; v0.4.7 &middot; Kathmandu</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-12 py-16 md:py-24 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-1 gap-12 pt-10 pb-16 md:pt-14 md:pb-24 lg:grid-cols-12 lg:gap-10">
           {/* left: statement */}
           <div className="lg:col-span-7">
-            <h1 className="font-serif text-[clamp(3rem,8vw,7.25rem)] leading-[0.95] tracking-[-0.02em] text-navy">
+            <h1 className="font-serif text-[clamp(2.75rem,6.4vw,6.25rem)] leading-[0.95] tracking-[-0.02em] text-navy">
               <span className="block overflow-hidden pb-[0.08em]">
                 <span data-line className="block">Every action,</span>
               </span>
@@ -90,10 +90,10 @@ export default function Hero() {
           </div>
 
           {/* right: live ledger */}
-          <div data-fade className="lg:col-span-5 lg:pt-4">
+          <div data-fade className="lg:col-span-5">
             <Ledger />
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-              Fig. 1: Real records from <span className="normal-case">callwitness demo</span>
+            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+              Fig. 1: Illustration. Real SHA-256, recomputed in your browser when you edit.
             </p>
           </div>
         </div>
@@ -111,6 +111,14 @@ export default function Hero() {
             </div>
           ))}
         </dl>
+
+        {/* scroll indicator */}
+        <div data-fade className="hidden flex-col items-center gap-3 pt-6 pb-10 md:flex" aria-hidden>
+          <span className="label">Scroll</span>
+          <span className="relative h-6 w-px overflow-hidden bg-rule">
+            <span className="cw-scroll-line absolute inset-0 bg-navy" />
+          </span>
+        </div>
       </div>
     </section>
   );

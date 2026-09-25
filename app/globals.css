@@ -48,6 +48,29 @@ body::before {
   background-size: 200px 200px;
 }
 
+/* Hero scroll indicator: a short line drifting down its 24px track */
+@keyframes cw-scroll-line {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+.cw-scroll-line { animation: cw-scroll-line 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+
+/* Mechanism diagram: a dot travelling along the connectors (down on mobile, across on desktop).
+   Paused unless the diagram is on screen (.cw-running is toggled by ScrollTrigger). */
+@keyframes cw-travel-y {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+@keyframes cw-travel-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+.cw-travel { animation: cw-travel-y 6s linear infinite paused; }
+.cw-running .cw-travel { animation-play-state: running; }
+@media (min-width: 48rem) {
+  .cw-travel { animation-name: cw-travel-x; }
+}
+
 /* Lenis */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
