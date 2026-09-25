@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import Ledger from "./Ledger";
+import WitnessCanvas from "./WitnessCanvas";
+import WitnessStatic from "./WitnessStatic";
 
 const FACTS = [
   { k: "Added latency", v: "0.34 ms", note: "p50, small call" },
@@ -14,6 +15,8 @@ const FACTS = [
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const slot = useRef<HTMLSpanElement>(null);
   const [copied, setCopied] = useState(false);
 
   useGSAP(
@@ -38,32 +41,45 @@ export default function Hero() {
 
   return (
     <section ref={root} className="relative overflow-x-clip">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-10">
-        {/* masthead strip */}
-        <div data-fade className="flex items-center justify-between border-b border-rule py-4">
-          <span className="label">Exhibit 01 / The record</span>
-          <span className="label hidden sm:inline">Open source &middot; v0.4.7 &middot; Kathmandu</span>
-        </div>
+      {/* the first screen (viewport minus the 72px nav and its 1px border); the Witness canvas sits behind it */}
+      <div
+        ref={stage}
+        className="group/stage relative isolate flex min-h-[calc(100svh-73px)] flex-col md:min-h-[max(640px,calc(100svh-73px))]"
+      >
+        <WitnessCanvas stageRef={stage} slotRef={slot} />
 
-        <div className="grid grid-cols-1 gap-12 pt-10 pb-16 md:pt-14 md:pb-24 lg:grid-cols-12 lg:gap-10">
-          {/* left: statement */}
-          <div className="lg:col-span-7">
-            <h1 className="font-serif text-[clamp(2.75rem,6.4vw,6.25rem)] leading-[0.95] tracking-[-0.02em] text-navy">
-              <span className="block overflow-hidden pb-[0.08em]">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-6 md:px-10">
+          {/* masthead strip */}
+          <div data-fade className="flex items-center justify-between border-b border-rule py-4">
+            <span className="label">Exhibit 01 / The record</span>
+            <span className="label hidden sm:inline">Open source &middot; v0.4.7 &middot; Kathmandu</span>
+          </div>
+
+          <div className="flex flex-1 flex-col justify-center py-6 md:py-2">
+            {/* mobile: both lines, then the mark. md+: the headline splits around the mark. */}
+            <h1 className="flex flex-col text-center font-serif text-[clamp(2.5rem,5.2vw,5.5rem)] leading-[1] tracking-[-0.02em] text-navy md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-8">
+              <span className="block overflow-hidden pb-[0.08em] md:col-start-1 md:row-start-1 md:text-right">
                 <span data-line className="block">Every action,</span>
               </span>
-              <span className="block overflow-hidden pb-[0.08em]">
+              <span className="block overflow-hidden pb-[0.08em] md:col-start-3 md:row-start-1 md:text-left">
                 <span data-line className="block italic">on the record.</span>
+              </span>
+              <span
+                ref={slot}
+                aria-hidden
+                className="relative mx-auto mt-5 block aspect-[410/322] w-[80vw] max-w-full md:col-start-2 md:row-start-1 md:mt-0 md:w-[min(60vh,560px,40vw)]"
+              >
+                <WitnessStatic />
               </span>
             </h1>
 
-            <p data-fade className="mt-8 max-w-[34rem] text-[17px] leading-relaxed text-ink/80 md:text-lg">
-              Callwitness records every tool call your AI agent makes into a hash-chained ledger that
-              nobody can quietly rewrite. When a customer, an auditor or a partner asks what happened,
-              you hand them proof, not a claim.
+            <p data-fade className="mx-auto mt-6 max-w-[36rem] text-center text-[16px] leading-relaxed text-ink/80 md:mt-4 md:text-[17px]">
+              Callwitness records every tool call your AI agent makes into a hash-chained ledger that nobody can
+              quietly rewrite. When a customer, an auditor or a partner asks what happened, you hand them proof, not a
+              claim.
             </p>
 
-            <div data-fade className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div data-fade className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center md:mt-4">
               <a
                 href="#review"
                 className="group inline-flex items-center justify-between gap-6 bg-navy px-6 py-4 text-[15px] text-bone transition-colors hover:bg-navy-deep"
@@ -76,7 +92,7 @@ export default function Hero() {
               <button
                 type="button"
                 onClick={copyInstall}
-                className="inline-flex items-center justify-between gap-6 border border-rule px-5 py-4 font-mono text-[13px] text-navy transition-colors hover:border-navy"
+                className="inline-flex items-center justify-between gap-6 border border-rule bg-paper px-5 py-4 font-mono text-[13px] text-navy transition-colors hover:border-navy"
                 aria-label="Copy install command"
               >
                 <span>
@@ -89,17 +105,19 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* right: live ledger */}
-          <div data-fade className="lg:col-span-5">
-            <Ledger />
-            <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-              Fig. 1: Illustration. Real SHA-256, recomputed in your browser when you edit.
-            </p>
+          {/* scroll indicator */}
+          <div data-fade className="hidden flex-col items-center gap-1.5 pb-2 md:flex" aria-hidden>
+            <span className="label">Scroll</span>
+            <span className="relative h-6 w-px overflow-hidden bg-rule">
+              <span className="cw-scroll-line absolute inset-0 bg-navy" />
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* facts strip */}
-        <dl data-fade className="grid grid-cols-2 border-t border-rule md:grid-cols-4">
+      {/* facts strip */}
+      <div className="mx-auto max-w-[1280px] px-6 md:px-10">
+        <dl className="grid grid-cols-2 border-t border-rule md:grid-cols-4">
           {FACTS.map((f, i) => (
             <div
               key={f.k}
@@ -111,14 +129,6 @@ export default function Hero() {
             </div>
           ))}
         </dl>
-
-        {/* scroll indicator */}
-        <div data-fade className="hidden flex-col items-center gap-3 pt-6 pb-10 md:flex" aria-hidden>
-          <span className="label">Scroll</span>
-          <span className="relative h-6 w-px overflow-hidden bg-rule">
-            <span className="cw-scroll-line absolute inset-0 bg-navy" />
-          </span>
-        </div>
       </div>
     </section>
   );

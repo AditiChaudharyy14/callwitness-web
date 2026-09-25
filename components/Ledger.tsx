@@ -2,8 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { sha256Hex } from "@/lib/sha256";
+import { emitReset, emitTamper } from "@/lib/chain";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Illustrative session. Each record's hash is SHA-256(prev + tool + content).
 const RECORDS = [
@@ -92,7 +96,10 @@ export default function Ledger() {
       if (reducedMotion()) return killEdits; // Final state is already rendered in the markup.
 
       const rows = gsap.utils.toArray<HTMLElement>("[data-row]");
-      const tl = gsap.timeline({ delay: 0.9 });
+      const tl = gsap.timeline({
+        delay: 0.2,
+        scrollTrigger: { trigger: root.current, start: "top 75%", once: true },
+      });
       intro.current = tl;
 
       gsap.set(rows, { autoAlpha: 0, y: 8 });
@@ -178,6 +185,15 @@ export default function Ledger() {
   const firstBad = hashes.findIndex((h, i) => h !== ORIGINAL[i]);
   const intact = firstBad === -1;
   const dirty = !intact || contents.some((c, i) => c !== RECORDS[i].content);
+
+  // Tell the rest of the page (the Witness, the nav logo) when the chain breaks or is restored.
+  const announced = useRef(-1);
+  useEffect(() => {
+    if (firstBad === announced.current) return;
+    announced.current = firstBad;
+    if (firstBad === -1) emitReset();
+    else emitTamper(firstBad);
+  }, [firstBad]);
   // The link after record k: the next record's stored prev, or (after the last record) the saved head hash.
   const linkAfterBroken = (k: number) => (k === LAST ? hashes[LAST] !== HEAD : PREV[k + 1] !== hashes[k]);
 

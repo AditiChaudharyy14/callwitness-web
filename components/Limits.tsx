@@ -33,7 +33,7 @@ export default function Limits() {
     <section id="limits" className="scroll-mt-[72px]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
-          <span className="label">Exhibit 07 / On the record</span>
+          <span className="label">Exhibit 08 / On the record</span>
         </div>
 
         <h2 className="max-w-[22ch] py-16 font-serif text-[clamp(2.25rem,5vw,4.25rem)] leading-[1.02] tracking-[-0.02em] text-navy md:py-24">

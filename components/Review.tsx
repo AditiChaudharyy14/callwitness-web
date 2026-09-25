@@ -13,7 +13,7 @@ export default function Review() {
     <section id="review" className="scroll-mt-[72px] bg-[#18223B] text-bone">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-bone/15 py-4">
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-bone/60">Exhibit 06 / Evidence review</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-bone/60">Exhibit 07 / Evidence review</span>
         </div>
 
         <div className="grid grid-cols-1 gap-12 py-16 md:py-24 lg:grid-cols-12 lg:gap-10">

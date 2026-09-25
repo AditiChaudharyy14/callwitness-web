@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLenis } from "lenis/react";
 import { LogoMark, Wordmark } from "./Logo";
+import { useChainBroken } from "@/lib/chain";
 
 const links = [
-  { href: "#mechanism", label: "Mechanism", n: "03" },
-  { href: "#evidence", label: "Evidence", n: "04" },
-  { href: "#review", label: "Review", n: "06" },
-  { href: "#limits", label: "Limits", n: "07" },
+  { href: "#mechanism", label: "Mechanism", n: "04" },
+  { href: "#evidence", label: "Evidence", n: "05" },
+  { href: "#review", label: "Review", n: "07" },
+  { href: "#limits", label: "Limits", n: "08" },
 ];
 
 const GITHUB = "https://github.com/AditiChaudharyy14/callwitness";
@@ -17,6 +18,7 @@ const GITHUB = "https://github.com/AditiChaudharyy14/callwitness";
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const lenis = useLenis();
+  const broken = useChainBroken(); // the logo's eye turns fail colour while the ledger chain is broken
 
   // Lock page scroll while the mobile menu is open; close on Escape.
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function Nav() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#18223B]">
         <nav className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-6 md:px-10">
           <Link href="/" onClick={close} className="flex items-center gap-3 text-[#E3D2BC]" aria-label="Callwitness home">
-            <LogoMark className="h-8 w-auto" dotColor="#CFAD6E" />
+            <LogoMark className="h-8 w-auto" dotColor={broken ? "#9B3B2E" : "#CFAD6E"} />
             <Wordmark className="h-[12px] w-auto" />
           </Link>
 

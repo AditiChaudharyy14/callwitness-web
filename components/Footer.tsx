@@ -25,6 +25,10 @@ export default function Footer() {
   return (
     <footer className="bg-[#18223B] text-[#E3D2BC]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
+        <div className="flex items-center justify-between border-b border-bone/15 py-4">
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-bone/60">Exhibit 09 / End of file</span>
+        </div>
+
         <div className="flex flex-col gap-8 border-b border-bone/15 py-16 md:flex-row md:items-end md:justify-between md:py-20">
           <p className="font-serif text-[clamp(2.25rem,5vw,4.25rem)] leading-[1.02] tracking-[-0.02em]">
             Every action,

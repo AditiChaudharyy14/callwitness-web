@@ -52,7 +52,7 @@ export default function Measurements() {
     <section ref={root} className="bg-bone">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
-          <span className="label">Exhibit 05 / Measured, not promised</span>
+          <span className="label">Exhibit 06 / Measured, not promised</span>
         </div>
 
         <div className="grid grid-cols-1 gap-12 py-16 md:py-24 lg:grid-cols-12 lg:gap-10">

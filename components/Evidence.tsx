@@ -16,7 +16,7 @@ export default function Evidence() {
     <section id="evidence" className="scroll-mt-[72px]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-10">
         <div className="flex items-center justify-between border-b border-rule py-4">
-          <span className="label">Exhibit 04 / The evidence report</span>
+          <span className="label">Exhibit 05 / The evidence report</span>
         </div>
 
         <h2 className="max-w-[20ch] py-16 font-serif text-[clamp(2.25rem,5vw,4.25rem)] leading-[1.02] tracking-[-0.02em] text-navy md:py-24">
@@ -91,7 +91,7 @@ export default function Evidence() {
                 </div>
               </div>
               <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                Fig. 4: From <span className="normal-case">callwitness demo</span>, v0.4.7.
+                Fig. 5: From <span className="normal-case">callwitness demo</span>, v0.4.7.
               </p>
             </Reveal>
           </div>

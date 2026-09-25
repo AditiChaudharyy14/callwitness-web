@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
+import TryIt from "@/components/TryIt";
 import ClaimVsRecord from "@/components/ClaimVsRecord";
 import Mechanism from "@/components/Mechanism";
 import Evidence from "@/components/Evidence";
@@ -14,6 +15,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <TryIt />
         <ClaimVsRecord />
         <Mechanism />
         <Evidence />
